@@ -22,7 +22,7 @@ This documentation contains instructions for the following tasks:
     3. [Advanced](#advanced)
 
 # Downloading poisoned datasets
-To verify the toxicity of our poisoned CIFAR-10 datasets, you can download our datasets, train using your own codebase and check if the target examples are misclassified. Download poisoned CIFAR-10 datasets crafted on ResNet20 for the poison-dog-target-bird scenario [here](https://www.dropbox.com/sh/4114nvnnx9b4eom/AAAo1NiBKqU8c9ushPotIaCba?dl=0).
+To verify the toxicity of our poisoned CIFAR-10 datasets, you can download our datasets, train using your own codebase and check if the target examples are misclassified. You can even try training them on Google Cloud AutoML Vision by following the instructions [here](https://cloud.google.com/vision/automl/docs/edge-quickstart) (target ID 0 and 6 are most likely to work). Download poisoned CIFAR-10 datasets crafted on ResNet20 for the poison-dog-target-bird scenario [here](https://www.dropbox.com/sh/4114nvnnx9b4eom/AAAo1NiBKqU8c9ushPotIaCba?dl=0).
 
 The datasets are organized as follows:
 ```text
