@@ -89,7 +89,7 @@ The final thing to do is to create a free account at [comet.ml](https://www.come
 Let's craft a set of poisons and then evaluate it via training a victim model from scratch. As a first example we will craft 50 poison dogs to cause the target bird (the first bird in the CIFAR10 test set) to be misclassified as a dog. Run this command from the main directory. For expediency, we will use only 10% of the CIFAR10 dataset as our training set. Run the following command from the home directory. 
 
 ```bash
-mpirun -np=3 python main.py 01234 \
+mpirun -np 3 python main.py 01234 \
  -nreplay=8 -victimproj=quickstart\
  -targetclass=2 -poisonclass=5 -ytargetadv=5 -targetids 0 \
  -nbatch=40 -batchsize=125 -npoison=50
@@ -121,7 +121,7 @@ Here, `cwT` is the Carlini-Wagner adversarial loss averaged over all 24 surrogat
 Here, `cwT0` is the Carlini-Wagner adversarial loss of the victim model at the current epoch. It should progressively go down below zero, indicating a successful attack. `accT0` also indicates whether or not the attack is successful. Also, `accV` is the validation accuracy. Since only 10% of CIFAR-10 is used as the training set, the validation accuracy should be much lower than typical, converging just above 50%.
 
 ### What did that command do?
-- `np=3` tells MPI to start 3 processes in parallel, which is about the maximum amount that will fit on a single GPU memory-wise. `nreplay=8` tells each process to sequentially compute the adversarial loss from 8 different models. Therefore we are using `np * nreplay = 24` surrogate models in our ensemble when crafting poisons. If you have a 4 GPU machine, things can be sped up by using `np=12` and `nreplay=2`. The processes will always be evenly distributed across available GPUs.
+- `np 3` tells MPI to start 3 processes in parallel, which is about the maximum amount that will fit on a single GPU memory-wise. `nreplay=8` tells each process to sequentially compute the adversarial loss from 8 different models. Therefore we are using `np * nreplay = 24` surrogate models in our ensemble when crafting poisons. If you have a 4 GPU machine, things can be sped up by using `np 12` and `nreplay=2`. The processes will always be evenly distributed across available GPUs.
 - `01234` is an example of a mandatory unique user-specified ID given to each poison crafting run. It is stored as metadata on the [comet experiment](https://www.comet.ml/docs/python-sdk/Experiment/) associated with that run and can be invoked later when running a victim evaluation to download the crafted poisons. Unless you're debugging, we recommend you change this unique ID every time you run a new crafting experiment.
 - `victimproj` is the user-specified name of the [comet project](https://www.comet.ml/docs/user-interface/#projects) where individual victim training runs will be stored. They are grouped into a comet project because there may be more than one victim training run per set of poisons. 
 - `targetclass`, `poisonclass`, `ytargetadv` are the IDs of the target, poison, and adversarial classes. See [CIFAR10 classes](https://www.cs.toronto.edu/~kriz/cifar.html) for reference. For CIFAR10, the range is [0, 10).
