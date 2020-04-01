@@ -15,7 +15,7 @@ One result of our work is a poisoned dataset that controls model behavior even o
 
 ## Outline
 This documentation contains instructions for the following tasks:
-1. [Download poisoned datasets](#Download-poisoned-dataset)
+1. [Download poisoned datasets](#downloading-poisoned-datasets)
 2. [Crafting your own poisons](#crafting-your-own-poisons)
     1. [Installation](#Installation)
     2. [Quick Start](#quick-start)
