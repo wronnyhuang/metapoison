@@ -10,7 +10,7 @@ MetaPoison is a method to create poisoned training data. An attacker might use t
 ![Teaser](doc/teaser_image.png "metapoison process")
 The goal as the attacker is to classify some bird image (here: the parrot) as a dog. To do so, a small fraction of the training data is imperceptibly modified before training. The network is then trained from scratch with this modified dataset. After training, validation performance is normal (eagle, owl, lovebird). However, the minor modifications to the training set cause the (unaltered) target image (parrot) to be misclassified by the neural network as "dog" with high confidence.
 
-One result of our work is a poisoned dataset that controls model behavior even on a real-world black-box system such as Google Cloud AutoML Vision.
+One result of our work is a poisoned dataset that controls model behavior even on a real-world black-box system such as [Google Cloud AutoML Vision](https://cloud.google.com/vision/automl/docs/edge-quickstart).
 ![Result](doc/screenshots.png "google cloud vision automl results")
 
 ## Outline
