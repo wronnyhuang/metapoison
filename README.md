@@ -98,7 +98,7 @@ mpirun -np 3 python main.py 01234 \
 ### Expected output
 
 Ignore the tensorflow deprecation warnings that are displayed at the beginning.
-You should see a link to the newly created `comet.ml` experiment page after 10-20 seconds. Click this link to see the poison crafting results displayed on a chart. On the terminal you should see the process of pretraining 24 models for a few minutes. The crafting process will then begin and you should see the results of each craftstep being printed, such as
+You should see a link to the newly created `comet.ml` experiment page after 10-20 seconds. Click this link to see the poison crafting results displayed on a chart. On the terminal you should see the process of vanilla pretraining 24 models for about 3-4 minutes. The crafting process will then begin and you should see the results of each craftstep being printed, such as
 
 ```text
 ...
