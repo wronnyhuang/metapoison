@@ -118,7 +118,7 @@ Here, `cwT` is the Carlini-Wagner adversarial loss averaged over all 24 surrogat
 ...
 ```
 
-Here, `cwT0` is the Carlini-Wagner adversarial loss of the victim model at the current epoch. It should progressively go down below zero, indicating a successful attack. `accT0` also indicates whether or not the attack is successful. Also, `accV` is the validation accuracy. Since only 10% of CIFAR-10 is used as the training set, the validation accuracy should be much lower than typical, converging just above 50%.
+Here, `cwT0` is the Carlini-Wagner adversarial loss of the victim model at the current epoch. It should progressively go down below zero, indicating a successful attack. `accT0` also indicates whether or not the attack is successful. Also, `accV` is the validation accuracy. Since only 10% of CIFAR-10 is used as the training set in this particular example for speed, the validation accuracy should be much lower than typical, converging just above 50%.
 
 ### What did that command do?
 - `np 3` tells MPI to start 3 processes in parallel, which is about the maximum amount that will fit on a single GPU memory-wise. `nreplay=8` tells each process to sequentially compute the adversarial loss from 8 different models. Therefore we are using `np * nreplay = 24` surrogate models in our ensemble when crafting poisons. If you have a 4 GPU machine, things can be sped up by using `np 12` and `nreplay=2`. The processes will always be evenly distributed across available GPUs.
