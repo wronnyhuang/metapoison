@@ -57,7 +57,7 @@ comet_ml==3.0+
 
 `openmpi` and `mpi4py` are required for parallelizing the ensembled poison crafting across multiple processes and potentially multiple GPUs. These are necessary packages even for single-GPU systems. Multiple GPUs are not required, but they do speed things up.
 
-`comet_ml` is an ML monitoring and logging service ([link](https://www.comet.ml)) which is used for storing the crafted poisons on the web. The poisons are automatically downloaded when victim evaluation is run. `comet_ml` is also used for logging and displaying the results. To install and use `comet_ml`, see quickstart below
+`comet_ml` is an ML monitoring and logging service ([link](https://www.comet.ml)) which is used for storing the crafted poisons on the web. The poisons are automatically downloaded when victim evaluation is run. `comet_ml` is also used for logging and displaying the results. To install and use `comet_ml`, see below
 
 ### Install using Anaconda
 
