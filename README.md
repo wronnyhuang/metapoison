@@ -1,7 +1,7 @@
 # Craft Poisoned Data using MetaPoison
 This repository contains TensorFlow implementations for crafting poisons and victim evaluation for the paper
 
-[MetaPoison: Robust General-purpose Clean-label Data Poisoning](placeholder.html) 
+[MetaPoison: Practical General-purpose Clean-label Data Poisoning](placeholder.html) 
 
 by W. Ronny Huang, Jonas Geiping, Liam Fowl, Gavin Taylor, Tom Goldstein.
 
