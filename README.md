@@ -1,7 +1,7 @@
 # Craft Poisoned Data using MetaPoison
 This repository contains TensorFlow implementations for crafting poisons and victim evaluation for the paper
 
-[MetaPoison: Practical General-purpose Clean-label Data Poisoning](placeholder.html) 
+[MetaPoison: Practical General-purpose Clean-label Data Poisoning](https://arxiv.org/abs/2004.00225) 
 
 by W. Ronny Huang, Jonas Geiping, Liam Fowl, Gavin Taylor, Tom Goldstein.
 
@@ -17,7 +17,7 @@ One result of our work is a poisoned dataset that controls model behavior even o
 This documentation contains instructions for the following tasks:
 1. [Download poisoned datasets](#downloading-poisoned-datasets)
 2. [Crafting your own poisons](#crafting-your-own-poisons)
-    1. [Installation](#Installation)
+    1. [Setup](#setup)
     2. [Quick Start](#quick-start)
     3. [Advanced](#advanced)
 
@@ -44,7 +44,7 @@ The IDs of the poisoned subset are `25000` to `25000 + num_poisons`. Note that i
 
 # Crafting your own poisons
 
-## Installation
+## Setup
 If you want to use our code to craft your own poisons, then you must first setup your environment correctly. The following libraries are required:
 ```text
 python==3.7
