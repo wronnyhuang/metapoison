@@ -10,7 +10,7 @@ def get_parser(victim=False):
     parser.add_argument('-tag', default='', type=str, help='Optional tag for the experiment. Will be logged onto comet')
     parser.add_argument('-bit64', action='store_true', help='Deprecated. Use 64-bit floating point for better reproducibility (default is 32-bit)')
     parser.add_argument('-logperiod', default=10, type=int, help='Period, in epochs, with which to save poisons to comet. E.g. if logperiod=10, then poisons will be saved at craftstep 0, 10, 20, ...')
-    parser.add_argument('-skipvictim', action='store_false', help='Skip running victim evaluation. Craft poisons only')
+    parser.add_argument('-skipvictim', action='store_true', help='Skip running victim evaluation. Craft poisons only')
     parser.add_argument('-justtrain', default=0, type=int, help='If justtrain != 0, it go into vanilla training mode--provide justtrain with an int equal to the number of epochs you want to vanilla train. Provide -weightset if you want to store the final weights into comet. This is useful when you want to save a lot of weights in different epoch so that you dont need to pretrain networks in the future')
     # threat model
     parser.add_argument('-npoison', default=200, type=int, help='Number of poisons to craft')
