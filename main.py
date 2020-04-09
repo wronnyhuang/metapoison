@@ -123,7 +123,7 @@ def craft():
     experiment.send_notification(f'{args.tag} finished', 'finished')
     experiment.end()
 
-    if args.skipvictim:
+    if not args.skipvictim:
         print('==> crafting finished. begin victim.')
         meta.init_weights(sess, pretrain_weights)
         from victim import victim
