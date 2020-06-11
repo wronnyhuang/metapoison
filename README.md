@@ -20,7 +20,8 @@ This documentation contains instructions for the following tasks:
 2. [Crafting your own poisons](#crafting-your-own-poisons)
     1. [Setup](#setup)
     2. [Quick Start](#quick-start)
-    3. [Advanced](#advanced)
+    3. [Algorithm Overview](#algorithm-overview)
+    3. [Reproducing results from paper](#reproducing-results-from-paper)
 
 # Downloading poisoned datasets
 To verify the toxicity of our poisoned CIFAR-10 datasets, you can download our premade datasets, train using your own codebase and check if the target examples are misclassified. You can even try training them on Google Cloud AutoML Vision by following the [instructions](https://cloud.google.com/vision/automl/docs/edge-quickstart). Download poisoned CIFAR-10 datasets crafted on ResNet20 for the poison-dog-target-bird scenario [here](https://www.dropbox.com/sh/4114nvnnx9b4eom/AAAo1NiBKqU8c9ushPotIaCba?dl=0). Target bird IDs 0 and 6 are most likely to work.
@@ -150,9 +151,7 @@ Here's a description of the metrics logged onto comet.ml:
 - Other metrics are for debugging purposes and seldom used 
 
 
-## Advanced
-
-### Algorithm overview
+## Algorithm overview
 
 There are 3 phases to the experiment:
 1. *Staggered pretraining*: Pretrain M surrogate models. Train the `m`-th surrogate model to the `mT/M`-th epoch
@@ -168,14 +167,14 @@ Description of code files:
 For example, in the [Quick Start](#quick-start) example above, first the `m`-th surrogate model was trained to the `mT/M`-th epoch (see Algorithm 1 in paper), where `M` and `T` are 24 in this example. We then moved into the poison crafting stage and poisons were crafted until the 61st craftstep, with the entire set of poisons being stored (onto comet) every 10 craftsteps. Finally victim evaluation with these poisons were automatically run using the same settings as used in the surrogate models during crafting. To train victim models on the poisoned data using different hyperparameter settings (to test robustness of the poisons), we could run `victim.py` with some of the `X`-prefixed arguments specified in `parse.py`.
 
 
-### More runs
-This subsection contain commands to craft poisons and evaluate them for other scenarios in the paper. We encourage you to look at `parse.py` along with our paper for all the available settings along with descriptions, or simply run
+## Reproducing results from paper
+This subsection contains commands to craft poisons and evaluate them for the various scenarios in the paper. We encourage you to look at `parse.py` along with our paper for all the available settings along with descriptions, or simply run
 
 ```bash
 python main.py --help
 ```
 
-#### Poisoning in the context of fine-tuning
+### Poisoning in the context of fine-tuning
 
 Craft 70 poison dogs to cause a target bird to be misclassified in the context of fine-tuning.
 
@@ -200,7 +199,7 @@ mpi -np 12 python main.py 01234 \
 
 Try varying `npoison` and `targetids`, as well as removing `-watermark`. If you average the victim successes over `targetids` from 0-9, and try various `npoison`, your results should be similar to those on Fig. 3 (top)
 
-#### Poisoning in the context of from-scratch training
+### Poisoning in the context of from-scratch training
 
 Craft 5000 poisons on full 50k CIFAR10 dataset using ResNet20. 4 or more GPUs are required to run this command, unless you change the `np` and `nreplay` settings which change the amount of parallelization (see above). So long as their product is fixed, the results should be similar.
 
@@ -215,7 +214,7 @@ Near the end of the run, it will automatically run victim.py and train 8 randoml
 
 Try experimenting with `-net=VGG13` or `-net=ConvNetBN` for different network architectures, `-targetclass=0 -poisonclass=6` for the frog-plane class pair, or different `targetids` for different target IDs. If you average over the success of the various victim runs for any particular set of poisons, your results should be similar to those corresponding in Fig. 4.
 
-#### Robustness to different victim settings
+### Robustness to different victim settings
 
 After you have run the previous command to generate 5000 poisons, now run victim training on those poisons with a different network architecture from the surrogate one used for crafting. We can also run a baseline control of the case where there are no poisons by inserting the poisons from craftstep 0 (These poisons will have no adversarial perturbation). We will run 8 trials for both craftstep 0 (unpoisoned baseline) and craftstep 60 (poisoned) to gather some statistics since each run will vary depending on the initialization.
 ```bash
@@ -244,7 +243,7 @@ python victim.py 01235 -craftsteps 0 60 -ntrial=8 -Xaugment
 
 Try experimenting with various differences in the victim settings, such as `-Xnpoison`, `-net`, `-Xbatchsize`, `Xaugment`, or `Xweightdecay`. Your results should look pretty similar to those in Fig. 5 if you average over the first 10 target IDs.
 
-#### Self-concealment poisoning scheme
+### Self-concealment poisoning scheme
 
 Craft poison planes to cause a target plane to be misclassified into another class. If you average over the first 5 target IDs, your results should be similar to those in Fig. 7 (left).
 ```bash
@@ -254,7 +253,7 @@ mpirun -np 8 python main.py 01236 \
  -nbatch=400 -batchsize=125 -npoison=5000 
 ```
 
-#### Multiclass-poisoning scheme
+### Multiclass-poisoning scheme
 
 Craft 5000 poisons with classes spread uniformly across the 10 classes to cause a target bird to be misclassified as a plane. If you average over the first 10 target IDs, your results should be similar to those in Fig. 7 (right).
 ```bash
