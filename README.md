@@ -5,6 +5,7 @@ This repository contains TensorFlow implementations for crafting poisons and vic
 
 by W. Ronny Huang, Jonas Geiping, Liam Fowl, Gavin Taylor, Tom Goldstein.
 
+
 ## What is MetaPoison?
 MetaPoison is a method to create poisoned training data. An attacker might use this attack in the following way:
 ![Teaser](doc/teaser_image.png "metapoison process")
@@ -52,7 +53,7 @@ tensorflow-gpu==1.14
 tensorflow-probabiity==0.7
 openmpi==4.0
 mpi4py==3.0
-comet_ml==3.0+
+comet_ml==3.0.2
 ```
 
 `openmpi` and `mpi4py` are required for parallelizing the ensembled poison crafting across multiple processes and potentially multiple GPUs. These are necessary packages even for single-GPU systems. Multiple GPUs are not required, but they do speed things up.
@@ -79,7 +80,7 @@ conda install -y tensorflow-probability==0.7
 conda install -y matplotlib
 conda install -y -c conda-forge openmpi
 conda install -y mpi4py
-pip install comet_ml
+pip install comet_ml==3.0.2
 ```
 
 The final thing to do is to create a free account at [comet.ml](https://www.comet.ml/) and copy both your [API key](https://www.comet.ml/docs/quick-start/) and [REST API key](https://www.comet.ml/docs/rest-api/getting-started/) to the `.comet.config` file in the main directory. Fill in your comet workspace name (usually just your username) as well.
@@ -167,16 +168,42 @@ Description of code files:
 For example, in the [Quick Start](#quick-start) example above, first the `m`-th surrogate model was trained to the `mT/M`-th epoch (see Algorithm 1 in paper), where `M` and `T` are 24 in this example. We then moved into the poison crafting stage and poisons were crafted until the 61st craftstep, with the entire set of poisons being stored (onto comet) every 10 craftsteps. Finally victim evaluation with these poisons were automatically run using the same settings as used in the surrogate models during crafting. To train victim models on the poisoned data using different hyperparameter settings (to test robustness of the poisons), we could run `victim.py` with some of the `X`-prefixed arguments specified in `parse.py`.
 
 
-### More example runs
-This subsection contain commands to craft poisons and evaluate them for other scenarios. There are more settings in our code that can be played with than is demonstrated here, and we encourage you to look at `parse.py` along with our paper for all the available settings, or simply run
+### More runs
+This subsection contain commands to craft poisons and evaluate them for other scenarios in the paper. We encourage you to look at `parse.py` along with our paper for all the available settings along with descriptions, or simply run
 
 ```bash
 python main.py --help
 ```
 
-#### Robustness to different victim settings
+#### Poisoning in the context of fine-tuning
 
-Craft 1000 poisons on full 50k CIFAR10 dataset using ResNet20. 4 or more GPUs are required to run this command, unless you change the `np` and `nreplay` settings which change the amount of parallelization (see above). So long as their product is fixed, the results should be similar.
+Craft 70 poison dogs to cause a target bird to be misclassified in the context of fine-tuning.
+
+First you must pretrain your network
+
+```bash
+python main.py 01234 \
+ -justtrain=200 -batchsize=125 -nbatch=400 -net=ConvNet -weightset=pretrain
+```
+
+This command will spawn training and save the metadata, including the final weights, into a comet experiment under the project `weightset-convnet-pretrain`. Note down the comet experiment ID of this run, and then run the following.
+
+```bash
+EXPT_ID=<insert here your comet experiment id from pretraining>
+mpi -np 12 python main.py 01234 \
+ -nadapt=4 -nreplay=2 -targetclass=2 -poisonclass=5 -watermark \
+ -targetids 0 -nbatch=400 -batchsize=125 -npoison=70 \
+ -ncraftstep=101 -net=ConvNet -victimproj=shafahicompare -weightsettrain -epscolor 0 0 0 \
+ -pretrain=weightset-convnet-pretrain/$EXPT_ID \
+ -lrnrate=0.01 -schedule 9999 9999 9999 -warmupperiod=0 
+```
+
+Try varying `npoison` and `targetids`, as well as removing `-watermark`. If you average the victim successes over `targetids` from 0-9, and try various `npoison`, your results should be similar to those on Fig. 3 (top)
+
+#### Poisoning in the context of from-scratch training
+
+Craft 5000 poisons on full 50k CIFAR10 dataset using ResNet20. 4 or more GPUs are required to run this command, unless you change the `np` and `nreplay` settings which change the amount of parallelization (see above). So long as their product is fixed, the results should be similar.
+
 ```bash
 mpirun -np 8 python main.py 01235 \
  -nreplay=3 -victimproj=resnetrobust -net=ResNet \
@@ -184,9 +211,20 @@ mpirun -np 8 python main.py 01235 \
  -nbatch=400 -batchsize=125 -npoison=1000
 ```
 
-Now run victim training on those poisons with a different network architecture from the surrogate one used for crafting. We will also run a baseline of the case where there are no poisons by inserting the poisons from craftstep 0 (These poisons will have no adversarial perturbation). We will run 8 trials for both craftstep 0 (unpoisoned baseline) and craftstep 60 (poisoned) to gather some statistics since each run will vary depending on the initialization.
+Near the end of the run, it will automatically run victim.py and train 8 randomly initialized ResNet20s from scratch on the newly generated poisoned dataset. All results will be logged to comet.
+
+Try experimenting with `-net=VGG13` or `-net=ConvNetBN` for different network architectures, `-targetclass=0 -poisonclass=6` for the frog-plane class pair, or different `targetids` for different target IDs. If you average over the success of the various victim runs for any particular set of poisons, your results should be similar to those corresponding in Fig. 4.
+
+#### Robustness to different victim settings
+
+After you have run the previous command to generate 5000 poisons, now run victim training on those poisons with a different network architecture from the surrogate one used for crafting. We can also run a baseline control of the case where there are no poisons by inserting the poisons from craftstep 0 (These poisons will have no adversarial perturbation). We will run 8 trials for both craftstep 0 (unpoisoned baseline) and craftstep 60 (poisoned) to gather some statistics since each run will vary depending on the initialization.
 ```bash
 python victim.py 01235 -craftsteps 0 60 -ntrial=8 -Xnet=VGG13
+```
+
+You can do the same with with fewer poisons. Here the victim will only use the first 500 out of the 5000 poisons that you generated.
+```bash
+python victim.py 01235 -craftsteps 0 60 -ntrial=8 -Xnet=VGG13 -Xnpoison=500
 ```
 
 You can also try victim training with double the batchsize compared to the batchsize used during crafting.
@@ -194,9 +232,21 @@ You can also try victim training with double the batchsize compared to the batch
 python victim.py 01235 -craftsteps 0 60 -ntrial=8 -Xbatchsize
 ```
 
+Or with weight decay.
+```bash
+python victim.py 01235 -craftsteps 0 60 -ntrial=8 -Xweightdecay
+```
+
+Or with data augmentation.
+```bash
+python victim.py 01235 -craftsteps 0 60 -ntrial=8 -Xaugment
+```
+
+Try experimenting with various differences in the victim settings, such as `-Xnpoison`, `-net`, `-Xbatchsize`, `Xaugment`, or `Xweightdecay`. Your results should look pretty similar to those in Fig. 5 if you average over the first 10 target IDs.
+
 #### Self-concealment poisoning scheme
 
-Craft poison planes to cause a target plane to be misclassified into another class
+Craft poison planes to cause a target plane to be misclassified into another class. If you average over the first 5 target IDs, your results should be similar to those in Fig. 7 (left).
 ```bash
 mpirun -np 8 python main.py 01236 \
  -nreplay=3 -victimproj=selfconceal -objective=indis3 \
@@ -206,7 +256,7 @@ mpirun -np 8 python main.py 01236 \
 
 #### Multiclass-poisoning scheme
 
-Craft 5000 poisons with classes spread uniformly across the 10 classes to cause a target bird to be misclassified as a plane
+Craft 5000 poisons with classes spread uniformly across the 10 classes to cause a target bird to be misclassified as a plane. If you average over the first 10 target IDs, your results should be similar to those in Fig. 7 (right).
 ```bash
 mpirun -np 8 python main.py 01237 \
  -nreplay=3 -multiclasspoison -victimproj=multiclass \
@@ -219,4 +269,6 @@ You may want to save the entire training set with the poisons inserted so that y
 
 ```bash
 python victim.py 01234 -craftsteps 60 -savepoisondataset
+
+
 
