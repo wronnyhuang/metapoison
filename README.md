@@ -176,9 +176,7 @@ python main.py --help
 
 ### Poisoning in the context of fine-tuning
 
-Craft 70 poison dogs to cause a target bird to be misclassified in the context of fine-tuning.
-
-First you must pretrain your network
+Craft 70 poison dogs to cause a target bird to be misclassified in the context of fine-tuning. First you must pretrain your network
 
 ```bash
 python main.py 01234 \
@@ -201,13 +199,13 @@ Try varying `npoison` and `targetids`, as well as removing `-watermark`. If you 
 
 ### Poisoning in the context of from-scratch training
 
-Craft 5000 poisons on full 50k CIFAR10 dataset using ResNet20. 4 or more GPUs are required to run this command, unless you change the `np` and `nreplay` settings which change the amount of parallelization (see above). So long as their product is fixed, the results should be similar.
+Craft 5000 poisons using ResNet20 as a crafting (surrogate) network to cause a target bird to be misclassified as a dog in the context of training from scratch. 4 or more GPUs are required to run this command, unless you change the `np` and `nreplay` settings which change the amount of parallelization (see above). So long as their product is fixed, the results should be similar.
 
 ```bash
 mpirun -np 8 python main.py 01235 \
  -nreplay=3 -victimproj=resnetrobust -net=ResNet \
  -targetclass=2 -poisonclass=5 -targetids 0 \
- -nbatch=400 -batchsize=125 -npoison=1000
+ -nbatch=400 -batchsize=125 -npoison=5000
 ```
 
 Near the end of the run, it will automatically run victim.py and train 8 randomly initialized ResNet20s from scratch on the newly generated poisoned dataset. All results will be logged to comet.
@@ -217,6 +215,7 @@ Try experimenting with `-net=VGG13` or `-net=ConvNetBN` for different network ar
 ### Robustness to different victim settings
 
 After you have run the previous command to generate 5000 poisons, now run victim training on those poisons with a different network architecture from the surrogate one used for crafting. We can also run a baseline control of the case where there are no poisons by inserting the poisons from craftstep 0 (These poisons will have no adversarial perturbation). We will run 8 trials for both craftstep 0 (unpoisoned baseline) and craftstep 60 (poisoned) to gather some statistics since each run will vary depending on the initialization.
+
 ```bash
 python victim.py 01235 -craftsteps 0 60 -ntrial=8 -Xnet=VGG13
 ```
@@ -268,6 +267,4 @@ You may want to save the entire training set with the poisons inserted so that y
 
 ```bash
 python victim.py 01234 -craftsteps 60 -savepoisondataset
-
-
 
